@@ -2,7 +2,7 @@
   "name": "worgen",
   "version": "0.0.1",
   "description": "A simple library for writing word/phrase generators",
-  "main": "index.js",
+  "main": "worgen.js",
   "scripts": {
     "test": "test"
   },
