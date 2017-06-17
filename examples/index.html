@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <style type="text/css">
+    textarea{
+      width: 100%;
+      height: 240px;
+      resize:none;
+    }
+
+    input{
+      display: block;
+      width: 100%;
+    }
+
+    button{
+      margin: 1em 0;
+    }
+  </style>
+
+  <script src="../index.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      var textarea = document.querySelector('textarea');
+      var button = document.querySelector('button');
+      var input = document.querySelector('input');
+
+      var dict = new Worgen(textarea.value);
+
+      // Capitalize first letter
+      dict.addFilter('c', function(){
+        return this.slice(0,1).toUpperCase() + this.slice(1);
+      });
+
+      // Generate random num random characters from set of string
+      dict.addFilter('rnd', function(string,num){
+        num = num || 1;
+        var regex = /.-./g;
+        pairs = [];
+        chars = string.replace(regex,function(a){pairs.push(a);return '';}).split('').map(function(a){return a.charCodeAt(0);});
+        pairs.forEach(function(a){
+          a = [a.charCodeAt(0), a.charCodeAt(2)].sort(function(a,b){return a-b;});
+          a = Array.apply(0,Array(a[1]-a[0]+1)).map(function(b,i) {return i+a[0];});
+          //a = String.fromCharCode.apply(this,a).split('');
+          chars = chars.concat(a);
+        });
+        var uniq = [];
+        chars.forEach(function(char){
+          if(uniq.indexOf(char)===-1){
+            uniq.push(char);
+          }
+        });
+        var num = parseInt(num,10);
+        num = isNaN(num)?0:num;
+        var word = '';
+        while(num--){
+          word+= String.fromCharCode(uniq[Math.floor(Math.random()*uniq.length)]);
+        }
+        return word;
+      });
+
+      button.addEventListener('click', function(event){
+        dict.commands = dict.getCommands(textarea.value);
+        input.value = dict.run('root');
+      });
+
+    });
+  </script>
+
+  <title>Worgen Example</title>
+</head>
+<body>
+<textarea>root=[z][gl][g][z][gl][g]
+city=[c]([p][s])
+z=[rnd](бвгдзлмнр)
+g=[rnd](кпстфхцчш)
+gl=[rnd](аеиоуыэюя)
+p=alcon|bridge|row|snow|deep|clear|iron|summer|wild|star|grey|lokh|strong|red|fair|stone
+s=wille|ost|fog|edge|view|den|mellow|spring|fall|dale|gate|maple|bank|acre|bell|henge|hold</textarea>
+<button>Result</button>
+<input type="text">
+</body>
+</html>
