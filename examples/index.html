@@ -6,6 +6,8 @@
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
+  <title>Worgen Example</title>
+
   <style type="text/css">
     textarea{
       width: 100%;
@@ -24,65 +26,86 @@
   </style>
 
   <script src="../index.js"></script>
+  <script src="../filters.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', function(){
       var textarea = document.querySelector('textarea');
       var button = document.querySelector('button');
       var input = document.querySelector('input');
 
-      var dict = new Worgen(textarea.value);
-
-      // Capitalize first letter
-      dict.addFilter('c', function(){
-        return this.slice(0,1).toUpperCase() + this.slice(1);
-      });
-
-      // Generate random num random characters from set of string
-      dict.addFilter('rnd', function(string,num){
-        num = num || 1;
-        var regex = /.-./g;
-        pairs = [];
-        chars = string.replace(regex,function(a){pairs.push(a);return '';}).split('').map(function(a){return a.charCodeAt(0);});
-        pairs.forEach(function(a){
-          a = [a.charCodeAt(0), a.charCodeAt(2)].sort(function(a,b){return a-b;});
-          a = Array.apply(0,Array(a[1]-a[0]+1)).map(function(b,i) {return i+a[0];});
-          //a = String.fromCharCode.apply(this,a).split('');
-          chars = chars.concat(a);
-        });
-        var uniq = [];
-        chars.forEach(function(char){
-          if(uniq.indexOf(char)===-1){
-            uniq.push(char);
-          }
-        });
-        var num = parseInt(num,10);
-        num = isNaN(num)?0:num;
-        var word = '';
-        while(num--){
-          word+= String.fromCharCode(uniq[Math.floor(Math.random()*uniq.length)]);
-        }
-        return word;
-      });
+      var dict = window.dict = new Worgen(textarea.value);
+      dict.filters = Worgen.commonFilters();
 
       button.addEventListener('click', function(event){
         dict.commands = dict.getCommands(textarea.value);
         input.value = dict.run('root');
       });
 
+      [].forEach.call(document.querySelectorAll('a[data-dict]'), function (el) {
+        el.addEventListener('click',function (e) {
+          textarea.value=document.getElementById(e.target.getAttribute('data-dict')).innerHTML;
+        });
+      });
+
     });
   </script>
 
-  <title>Worgen Example</title>
+
 </head>
 <body>
-<textarea>root=[z][gl][g][z][gl][g]
-city=[c]([p][s])
-z=[rnd](бвгдзлмнр)
-g=[rnd](кпстфхцчш)
-gl=[rnd](аеиоуыэюя)
-p=alcon|bridge|row|snow|deep|clear|iron|summer|wild|star|grey|lokh|strong|red|fair|stone
-s=wille|ost|fog|edge|view|den|mellow|spring|fall|dale|gate|maple|bank|acre|bell|henge|hold</textarea>
+<textarea>root=[rnd]
+rnd=foo|bar|[randomSymbols](a-Z,6)</textarea>
 <button>Result</button>
-<input type="text">
+<input type="text"/>
+
+<p>Filters available: <script type="text/javascript">document.write(Object.keys(Worgen.commonFilters()).join(', '))</script> </p>
+<hr>
+
+<a data-dict="slavic" href="#">Slavic names</a> |
+<a data-dict="towns" href="#">Medieval town names</a> |
+<a data-dict="spells" href="#">Offence spell names</a> |
+<a data-dict="sw" href="#">Star Wars surnames</a> |
+<a data-dict="drow" href="#">Drow names</a> |
+<a data-dict="drow" href="#">Passweird</a>
+
+<script type="text/worgen" id="spells">root=[offensive]
+offensive=[kind] [what]|[what] of [kind]
+kind=scarlet|marrow|rune|sun|ether|azure|bone|red|death|shadow|dark|light|moon|nether|liquid|chaos|life|soul|fire|shard|flame|skull|dead|lightning|moon|ice|light|gore|bone|death|spell|frost|water|white
+what=rage|grip|fire|fury|blade|skull|sling|bolt|rain|spark|blast|lance|bomb|metheor|whip|star|coil|loop|fist|tear|blaze|arrow|chaos|wound|strike|hit|crusher|claw|spike|shot</script>
+
+<script type="text/worgen" id="passweird">root=[ganked][rand]
+rand=[randomSymbols](0-9+,4)
+ganked=[replaceSymbols](alietos,4!1370$,[moon],0.5)
+moon=[replaceSymbols](abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,[weird],0.33)
+weird=[adj][noun]
+adj=slurpy|mysterious|withered|leaking|sinister|seamy|sweaty|crawling|howling|dry|wet|infected|smelly|gunky|torn|bleeding|glitter|dank|fungal|gaping|tiny|creamy|swarmy|stale
+noun=snot|worm|smegma|tongue|hair|bandage|pimp|denture|moth|boil|twat|shape|howl|gums|ulcer|teeth|taco|diaper|butthole|member|hole|pizza|vago</script>
+
+<script type="text/worgen" id="towns">root=[p][s]|[p][s][s]
+p=Alcon|Bridge|Row|Snow|Deep|Clear|Iron|Summer|Wild|Star|Grey|Lokh|Strong|Red|Fair|Stone
+s=wille|ost|fog|edge|view|den|mellow|spring|fall|dale|gate|maple|bank|acre|bell|henge|hold</script>
+
+<script type="text/worgen" id="drow">root=[prm][sufm] [hp][hs]|[prf][suff] [hp][hs]
+prm=Akor|Alaun|Aly|Ang|Ardul|Aun|Bae|Bal|Belar|Briz|Bur|Chal|Char|Chess|Dhaun|Dil|Dirz|Dris|Eclav|Elvan|Elv|Erel|Ethe|Faer|Felyn|Filf|Gauss|G'eld|Ghuan|Gin|Grey|Hael|Hal|Houn|Iiv|Iim|Illiam|In|Ilph|Irae|In|Iym|Jan|Jhael|Jhul|Jys|Lael|Lar|LiNeer|Lird|Lua|Mal|May|Micar|Min|Mol|Myr|Nath|Ned|Nhil|Neer|Null|Olor|Pellan|Phaer|Phyr|Qualn|Quar|Quav|Qil|Rauv|Ril|Sbat|Sab|Shi'n|Shri|Shur|Shynt|Sin|Ssap|Susp|Talab|Tal|Triel|T'riss|Ulvir|Umrae|Vas|Vic|Vier|Vlon|Waer|Wuyon|Xull|Xun|Yas|Zar|Zebey|Zes|Zilv
+prf=Alak|Alton|Kel|Adin|Amal|Ant|Bar|Bel|Bruh|Berg|Bhin|Chasz|Kron|Cal|Dhaun|Dur|Div|Riz|Elk|Kalan|Elaug|Rhyl|Erth|Selds|Fil|Phar|Orgoll|G'eld|Ghuan|Din|Gul|Hatch|Sol|Rik|Dip|Iim|Im|Sorn|Ilph|Ilzt|Izz|Ist|Duag|Gel|Jar|Driz|Llt|Les|Mourn|Ryld|Lyme|Malag|Mas|Micar|Ran|Go|Nym|Mer|Nad|Nal|Neer|Nil|Omar|Relon|Vorn|Phyx|Quil|Quar|Quev|Quil|Welv|Ryl|Szor|Tsab|Kren|Ssz|Shar|Shynt|Szin|Tath|Spir|Tluth|Tar|Taz|Teb|Uhls|Hurz|Vesz|Vic|Val|Wod|Wehl|Wruz|Url|Xun|Yaz|Zakn|Zek|Zsz|Vuz
+sufm=agh|as|aun|d|afein|aufein|launim|erin|atar|aste|aonar|al|gloth|antar|lyn|roos|axle|daer|drin|diirn|zar|driirn|dorl|e|erd|eyl|fein|fryn|ica|eth|imar|inid|inidia|in|intra|atlab|irahc|gos|jss|kah|raen|dyn|aghar|lin|lochar|myr|mur'ss|nar|olil|nozz|net|nolu|olin|onim|omph|qualyn|net|oj|or|rar|orvir|olvir|rak|ril|ree|oyn|ryn|ral|rysn|trin|tran|ton|tar|olg|tel|tyrr|dan|dor|dar|diin|uque|dax|ven|vayas|vyll|vyr|hrae|hriir|hrys|zaer|zen|zyr|yl|yln|inyon|yrd|yraen|vrae|yrr|zt
+suff=a|ace|ae|aer|afae|afay|ala|anna|arra|aste|avin|ayne|baste|breena|bryn|cice|cyrl|da|dia|diira|dra|driira|dril|e|eari|eyl|ffyn|fryn|iara|ice|idil|iira|inidia|inil|intra|isstra|ithra|jra|jss|kacha|kiira|lay|lara|lin|lochar|mice|mur'ss|na|nilee|niss|nitra|nolu|olin|onia|oyss|qualyn|quarra|quiri|ra|rae|raema|raena|riia|ril|riina|ryna|ryne|shalee|ssysn|stin|stra|tana|thara|thrae|tree|tyrr|ual|ue|uit|une|uque|urra|va|vayas|vyll|vyrae|wae|wiira|wyss|xae|xena|xyra|yl|ylene|ymma|ynda|ynrae|vrae|yrr|zyne
+hp=Alean|Ale|Arab|Arken|Auvry|Baen|Barri|Cladd|Desp|De|Do'|Eils|Everh|Fre|Gode|Helvi|Hla|Hun'|Ken|Kil|Mae|Mel|My|Noqu|Orly|Ouss|Rilyn|Teken'|Tor|Zau
+hs=afin|ana|ani|ar|arn|ate|ath|duis|ervs|ep|ett|ghym|iryn|lyl|mtor|ndar|neld|rae|rahel|rret|sek|th|tlar|t'tar|tyl|und|urden|val|viir|zynge</script>
+
+<script type="text/worgen" id="slavic">root=[rn] [rn]ович [rn][end]
+end=ов|овский|енко
+rn=[i]и[b]|[o]о[b]|[e]е[b]
+i=влад|мст|бер|бож|бор|бран|брат|брон
+o=яр|свят|бел|благ|красн|тех|страд|ил|сух|чист
+b=слав|полк|люб|мир|мил|дар|вид|люд|буд|гнев|лик
+e=меч|вяч|бол|ч|солнц|соб|ча|сд|пр|пач|огн|май</script>
+
+<script type="text/worgen" id="sw">root=[npr][nsu]
+npr=Tar|Wolf|Terril|Tun|San|Ant|Mak|Quel|Sar|Sky|Ardo|Fa|Kra|Or|Ber|Dark|Terr|Sel|Qual|Lor|Nel|Hor|Cyne|Nab|Gun|Ard|Kut|Zar|Nex|Nor|Ner|And|Tor|Nay|Tav|Lee|Hel|So|Moth|Na|El|Light|Ris|Arch|Tal|Thra|O|Sa|Try
+nsu=kant|siri|les|hek|ma|syn|rak|ray|nel|ria|kin|walker|dres|turus|gana|baoth|lo|ker|ran|ell|cin|el|ng|prin|ia|us|ant|il|hrn|ezsh|qus|on|ik|ayen|loinne|wol|ross|cken|dine|rus|ms|vold|trayn|erre|rott|trin|lan|in</script>
+
+
 </body>
 </html>
